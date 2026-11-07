@@ -178,6 +178,8 @@ git clone https://github.com/gujialei628/chaoxing-homework.git
 - **导出 HTML**：单个文件，公式已经排版好，双击就能看，也可以 `Ctrl + P` 打印成 PDF；顶部有课程分类，点一下只看那门课
 - **Markdown**：纯文本版，适合放到 Typora / Obsidian 里继续编辑
 
+> 想先看看导出文档长什么样？打开 **[示例导出](docs/sample-export.html)** —— 全部是虚构数据，用浏览器直接打开即可，公式已经排成印刷体。
+
 ---
 
 ## 常见问题

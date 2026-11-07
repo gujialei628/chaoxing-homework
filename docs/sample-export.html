@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>学习通作业题库 · 作业题库</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: #f5f6f8; color: #202632;
+    font: 15px/1.9 -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  .page { max-width: 900px; margin: 0 auto; padding: 0 30px 90px; background: #fff;
+    box-shadow: 0 0 50px rgba(16,24,40,.07); min-height: 100vh; }
+
+  .nav { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 14px 0 12px; margin-bottom: 6px;
+    background: rgba(255,255,255,.96); border-bottom: 1px solid #eef1f6; }
+  .chip { display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 13px; border: 1px solid #e3e7ee; border-radius: 999px;
+    background: #fff; font: inherit; font-size: 13px; color: #4b5262; cursor: pointer;
+    transition: all .14s ease; }
+  .chip:hover { border-color: #c3cfe8; color: #1f2430; }
+  .chip span { font-size: 11.5px; color: #a3a9b6; }
+  .chip.on { background: #2f6bff; border-color: #2f6bff; color: #fff; box-shadow: 0 2px 10px rgba(47,107,255,.28); }
+  .chip.on span { color: rgba(255,255,255,.78); }
+
+  section.course > h1 { font-size: 25px; margin: 30px 0 2px; letter-spacing: .3px; }
+  section.course > .meta { color: #9aa0ae; font-size: 12.5px; margin-bottom: 22px; }
+
+  h2 { font-size: 18px; margin: 36px 0 12px; padding: 0 0 8px 10px;
+    border-left: 4px solid #2f6bff; border-bottom: 1px solid #eef1f6; }
+  h3 { font-size: 16.5px; font-weight: 650; color: #10151f; margin: 34px 0 12px;
+    padding-bottom: 7px; border-bottom: 1px dashed #e8ecf3; }
+  h3::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 10px;
+    border-radius: 2px; background: #2f6bff; vertical-align: 2px; }
+
+  h4[class^="k-"] { display: flex; align-items: center; gap: 8px;
+    font-size: 14px; margin: 20px 0 7px; padding-left: 10px; border-left: 3px solid currentColor; }
+  h4.k-core { color: #1a4fd6; }
+  h4.k-key  { color: #c0392b; }
+  h4.k-hard { color: #7b3fa0; }
+  h4.k-exam { color: #0a7a48; }
+
+  p { margin: 0 0 9px; }
+  ul { margin: 4px 0 14px 24px; padding: 0; }
+  li { margin: 5px 0; }
+  li::marker { color: #b9c1d1; }
+  blockquote { margin: 10px 0; padding: 8px 14px; border-left: 3px solid #c9d6ff;
+    background: #f7f9ff; color: #4b5262; border-radius: 0 6px 6px 0; }
+  strong { font-weight: 650; }
+  .math-block { margin: 12px 0 16px; overflow-x: auto; }
+  math { font-size: 1.06em; }
+  .foot { margin-top: 44px; padding-top: 16px; border-top: 1px solid #eef1f6;
+    color: #a8aebc; font-size: 12px; text-align: center; }
+
+  @media print {
+    body { background: #fff; }
+    .nav { display: none; }
+    .page { box-shadow: none; padding: 0; max-width: none; }
+    section.course > h1 { margin-top: 0; }
+    section.course { page-break-before: always; }
+    section.course:first-of-type { page-break-before: auto; }
+    h2, h3, h4 { page-break-after: avoid; }
+    li, p, blockquote { page-break-inside: avoid; }
+  }
+  @media (max-width: 640px) {
+    .page { padding: 0 16px 60px; }
+    section.course > h1 { font-size: 21px; }
+  }
+</style></head>
+<body><div class="page">
+<nav class="nav">
+  <button class="chip on" data-id="all">全部<span>2</span></button>
+  <button class="chip" data-id="demo_math">高等数学（示例）<span>1</span></button>
+  <button class="chip" data-id="demo_phy">大学物理（示例）<span>1</span></button>
+</nav>
+<section class="course" data-id="demo_math" data-name="高等数学（示例）">
+  <h1>高等数学（示例）</h1>
+  <div class="meta">1 个已交作业</div>
+<h2>教材知识点梳理（示例出版社《高等数学》（第 X 版））</h2>
+<h3>第一章 函数与极限</h3>
+<h4 class="k-core">核心知识点</h4>
+<ul><li>极限的四则运算法则与两个重要极限：<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mrow><mi>lim</mi><mo>⁡</mo></mrow><mrow><mi>x</mi><mo>→</mo><mn>0</mn></mrow></munder><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi>sin</mi><mo>⁡</mo><mi>x</mi></mrow><mi>x</mi></mfrac></mstyle><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\lim\limits_{x\to0}\dfrac{\sin x}{x}=1</annotation></semantics></math></span>，<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mrow><mi>lim</mi><mo>⁡</mo></mrow><mrow><mi>x</mi><mo>→</mo><mi mathvariant="normal">∞</mi></mrow></munder><msup><mrow><mo fence="true">(</mo><mn>1</mn><mo>+</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><mn>1</mn><mi>x</mi></mfrac></mstyle><mo fence="true">)</mo></mrow><mi>x</mi></msup><mo>=</mo><mi>e</mi></mrow><annotation encoding="application/x-tex">\lim\limits_{x\to\infty}\left(1+\dfrac1x\right)^x=e</annotation></semantics></math></span>。</li><li>等价无穷小替换：<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>→</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">x\to0</annotation></semantics></math></span> 时 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>sin</mi><mo>⁡</mo><mi>x</mi><mo>∼</mo><mi>x</mi></mrow><annotation encoding="application/x-tex">\sin x\sim x</annotation></semantics></math></span>，<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ln</mi><mo>⁡</mo><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mi>x</mi><mo stretchy="false">)</mo><mo>∼</mo><mi>x</mi></mrow><annotation encoding="application/x-tex">\ln(1+x)\sim x</annotation></semantics></math></span>，<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>cos</mi><mo>⁡</mo><mi>x</mi><mo>∼</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>2</mn></mfrac></mstyle></mrow><annotation encoding="application/x-tex">1-\cos x\sim\dfrac{x^2}{2}</annotation></semantics></math></span>。</li></ul>
+<h4 class="k-key">重点</h4>
+<ul><li>用等价无穷小化简 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle displaystyle="true" scriptlevel="0"><mfrac><mn>0</mn><mn>0</mn></mfrac></mstyle></mrow><annotation encoding="application/x-tex">\dfrac{0}{0}</annotation></semantics></math></span> 型极限。</li><li>连续性与间断点分类。</li></ul>
+<h4 class="k-hard">难点</h4>
+<ul><li>含参极限的讨论，以及 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>1</mn><mi mathvariant="normal">∞</mi></msup></mrow><annotation encoding="application/x-tex">1^\infty</annotation></semantics></math></span> 型极限的变形。</li></ul>
+<h4 class="k-exam">常见题型</h4>
+<ul><li>求 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mrow><mi>lim</mi><mo>⁡</mo></mrow><mrow><mi>x</mi><mo>→</mo><mn>0</mn></mrow></munder><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi>tan</mi><mo>⁡</mo><mi>x</mi><mo>−</mo><mi>sin</mi><mo>⁡</mo><mi>x</mi></mrow><msup><mi>x</mi><mn>3</mn></msup></mfrac></mstyle></mrow><annotation encoding="application/x-tex">\lim\limits_{x\to0}\dfrac{\tan x-\sin x}{x^3}</annotation></semantics></math></span> 这类需要展开到高阶的极限。</li></ul>
+<h2>知识点梳理</h2>
+<h3>多元函数微分学</h3>
+<ul><li>全微分：<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">d</mi><mi>z</mi><mo>=</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>z</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>x</mi></mrow></mfrac></mstyle><mi mathvariant="normal">d</mi><mi>x</mi><mo>+</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>z</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>y</mi></mrow></mfrac></mstyle><mi mathvariant="normal">d</mi><mi>y</mi></mrow><annotation encoding="application/x-tex">\mathrm{d}z=\dfrac{\partial z}{\partial x}\mathrm{d}x+\dfrac{\partial z}{\partial y}\mathrm{d}y</annotation></semantics></math></span>，可微的充分条件是偏导数连续。</li><li>复合函数求导用链式法则，<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>z</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>x</mi></mrow></mfrac></mstyle><mo>=</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>z</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>u</mi></mrow></mfrac></mstyle><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>u</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>x</mi></mrow></mfrac></mstyle><mo>+</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>z</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>v</mi></mrow></mfrac></mstyle><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>v</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>x</mi></mrow></mfrac></mstyle></mrow><annotation encoding="application/x-tex">\dfrac{\partial z}{\partial x}=\dfrac{\partial z}{\partial u}\dfrac{\partial u}{\partial x}+\dfrac{\partial z}{\partial v}\dfrac{\partial v}{\partial x}</annotation></semantics></math></span>。</li></ul>
+<h3>二重积分</h3>
+<ul><li>极坐标下 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">d</mi><mi>x</mi><mi mathvariant="normal">d</mi><mi>y</mi><mo>=</mo><mi>r</mi><mtext> </mtext><mi mathvariant="normal">d</mi><mi>r</mi><mi mathvariant="normal">d</mi><mi>θ</mi></mrow><annotation encoding="application/x-tex">\mathrm{d}x\mathrm{d}y=r\,\mathrm{d}r\mathrm{d}\theta</annotation></semantics></math></span>，遇到 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2+y^2</annotation></semantics></math></span> 优先考虑。</li><li>交换积分次序前先画区域，写成 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo>≤</mo><mi>x</mi><mo>≤</mo><mi>b</mi><mo separator="true">,</mo><mtext> </mtext><msub><mi>φ</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>≤</mo><mi>y</mi><mo>≤</mo><msub><mi>φ</mi><mn>2</mn></msub><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">a\le x\le b,\ \varphi_1(x)\le y\le\varphi_2(x)</annotation></semantics></math></span>。</li></ul>
+<h3>第三章 多元函数微分学（示例作业）（待批阅）</h3>
+<p><strong>1. 设 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi><mo>=</mo><msup><mi>x</mi><mn>2</mn></msup><mi>y</mi><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">z=x^2y+y^2</annotation></semantics></math></span>，则 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>z</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>x</mi></mrow></mfrac></mstyle><mo>=</mo></mrow><annotation encoding="application/x-tex">\dfrac{\partial z}{\partial x}=</annotation></semantics></math></span>（ ）.</strong>（选择题，3 分）</p>
+<ul><li>A. <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>x</mi><mi>y</mi></mrow><annotation encoding="application/x-tex">2xy</annotation></semantics></math></span> ✅</li><li>B. <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>2</mn><mi>y</mi></mrow><annotation encoding="application/x-tex">x^2+2y</annotation></semantics></math></span></li><li>C. <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>x</mi><mo>+</mo><mi>y</mi></mrow><annotation encoding="application/x-tex">2x+y</annotation></semantics></math></span></li><li>D. <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>y</mi></mrow><annotation encoding="application/x-tex">x^2+y</annotation></semantics></math></span></li></ul>
+<blockquote>我的答案：A</blockquote>
+<p><strong>解析</strong>：对 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span> 求偏导时把 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span> 视为常数：<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle displaystyle="true" scriptlevel="0"><mfrac><mi mathvariant="normal">∂</mi><mrow><mi mathvariant="normal">∂</mi><mi>x</mi></mrow></mfrac></mstyle><mo stretchy="false">(</mo><msup><mi>x</mi><mn>2</mn></msup><mi>y</mi><mo stretchy="false">)</mo><mo>=</mo><mn>2</mn><mi>x</mi><mi>y</mi></mrow><annotation encoding="application/x-tex">\dfrac{\partial}{\partial x}(x^2y)=2xy</annotation></semantics></math></span>，<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>y</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">y^2</annotation></semantics></math></span> 的导数为 0，故结果为 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>x</mi><mi>y</mi></mrow><annotation encoding="application/x-tex">2xy</annotation></semantics></math></span>，选 A。</p>
+<p><strong>知识点</strong>：偏导数、多元函数求导</p>
+<p><strong>2. 计算 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle scriptlevel="0" displaystyle="true"><mi>I</mi><mo>=</mo><msub><mo>∬</mo><mi>D</mi></msub><mfrac><mn>1</mn><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow></msqrt></mfrac><mtext> </mtext><mi mathvariant="normal">d</mi><mi>x</mi><mi mathvariant="normal">d</mi><mi>y</mi></mstyle></mrow><annotation encoding="application/x-tex">\displaystyle I=\iint_D\dfrac{1}{\sqrt{x^2+y^2}}\,\mathrm{d}x\mathrm{d}y</annotation></semantics></math></span>，其中 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi><mo>:</mo><mn>1</mn><mo>≤</mo><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup><mo>≤</mo><mn>4</mn><mo separator="true">,</mo><mtext> </mtext><mi>y</mi><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">D:1\le x^2+y^2\le 4,\ y\ge 0</annotation></semantics></math></span>.</strong>（计算题，10 分）</p>
+<p><strong>解析</strong>：用极坐标，<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">d</mi><mi>x</mi><mi mathvariant="normal">d</mi><mi>y</mi><mo>=</mo><mi>r</mi><mtext> </mtext><mi mathvariant="normal">d</mi><mi>r</mi><mi mathvariant="normal">d</mi><mi>θ</mi></mrow><annotation encoding="application/x-tex">\mathrm{d}x\mathrm{d}y=r\,\mathrm{d}r\mathrm{d}\theta</annotation></semantics></math></span>，被积函数为 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mstyle displaystyle="true" scriptlevel="0"><mfrac><mn>1</mn><mi>r</mi></mfrac></mstyle></mrow><annotation encoding="application/x-tex">\dfrac1r</annotation></semantics></math></span>，两者相消：<div class="math-block"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>I</mi><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mi>π</mi></msubsup><mi mathvariant="normal">d</mi><mi>θ</mi><msubsup><mo>∫</mo><mn>1</mn><mn>2</mn></msubsup><mfrac><mn>1</mn><mi>r</mi></mfrac><mo>⋅</mo><mi>r</mi><mtext> </mtext><mi mathvariant="normal">d</mi><mi>r</mi><mo>=</mo><mi>π</mi><mtext> </mtext><mo stretchy="false">(</mo><mn>2</mn><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo><mo>=</mo><mi>π</mi><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">I=\int_0^{\pi}\mathrm{d}\theta\int_1^2\dfrac{1}{r}\cdot r\,\mathrm{d}r=\pi\,(2-1)=\pi.</annotation></semantics></math></span></div></p>
+<p><strong>知识点</strong>：极坐标下的二重积分、环形半圆域</p>
+<p><strong>3. 求微分方程 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>y</mi><mrow><mo mathvariant="normal">′</mo><mo mathvariant="normal">′</mo></mrow></msup><mo>−</mo><mn>4</mn><msup><mi>y</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup><mo>+</mo><mn>4</mn><mi>y</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">y&#x27;&#x27;-4y&#x27;+4y=0</annotation></semantics></math></span> 的通解.</strong>（解答题，12 分）</p>
+<p><strong>解析</strong>：特征方程 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>r</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>r</mi><mo>+</mo><mn>4</mn><mo>=</mo><mo stretchy="false">(</mo><mi>r</mi><mo>−</mo><mn>2</mn><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">r^2-4r+4=(r-2)^2=0</annotation></semantics></math></span>，有二重根 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">r=2</annotation></semantics></math></span>，故通解为 <div class="math-block"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>y</mi><mo>=</mo><mo stretchy="false">(</mo><msub><mi>C</mi><mn>1</mn></msub><mo>+</mo><msub><mi>C</mi><mn>2</mn></msub><mi>x</mi><mo stretchy="false">)</mo><mtext> </mtext><msup><mi>e</mi><mrow><mn>2</mn><mi>x</mi></mrow></msup><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">y=(C_1+C_2x)\,e^{2x}.</annotation></semantics></math></span></div></p>
+<p><strong>知识点</strong>：二阶常系数齐次线性微分方程、特征根为二重根</p>
+</section>
+<section class="course" data-id="demo_phy" data-name="大学物理（示例）">
+  <h1>大学物理（示例）</h1>
+  <div class="meta">1 个已交作业</div>
+<h2>知识点梳理</h2>
+<h3>质点运动学</h3>
+<ul><li>速度 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>v</mi><mo>⃗</mo></mover><mo>=</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">d</mi><mover accent="true"><mi>r</mi><mo>⃗</mo></mover></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac></mstyle></mrow><annotation encoding="application/x-tex">\vec v=\dfrac{\mathrm{d}\vec r}{\mathrm{d}t}</annotation></semantics></math></span>，加速度 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>a</mi><mo>⃗</mo></mover><mo>=</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">d</mi><mover accent="true"><mi>v</mi><mo>⃗</mo></mover></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac></mstyle></mrow><annotation encoding="application/x-tex">\vec a=\dfrac{\mathrm{d}\vec v}{\mathrm{d}t}</annotation></semantics></math></span>。</li><li>匀变速直线运动：<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>=</mo><msub><mi>v</mi><mn>0</mn></msub><mo>+</mo><mi>a</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">v=v_0+at</annotation></semantics></math></span>，<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><msub><mi>x</mi><mn>0</mn></msub><mo>+</mo><msub><mi>v</mi><mn>0</mn></msub><mi>t</mi><mo>+</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><mn>1</mn><mn>2</mn></mfrac></mstyle><mi>a</mi><msup><mi>t</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x=x_0+v_0t+\dfrac12at^2</annotation></semantics></math></span>。</li></ul>
+<h3>第一章 质点运动学（示例作业）（已完成）</h3>
+<p><strong>1. 一质点沿 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span> 轴运动，位置 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mn>3</mn><msup><mi>t</mi><mn>2</mn></msup><mo>+</mo><mn>2</mn><mi>t</mi></mrow><annotation encoding="application/x-tex">x=3t^2+2t</annotation></semantics></math></span>（SI 单位），则 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>2</mn><mtext> </mtext><mi mathvariant="normal">s</mi></mrow><annotation encoding="application/x-tex">t=2\,\mathrm{s}</annotation></semantics></math></span> 时的速度大小为 ______.</strong>（填空题，2 分）</p>
+<blockquote>我的答案：<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>14</mn><mtext> </mtext><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">/</mi><mi mathvariant="normal">s</mi></mrow></mrow><annotation encoding="application/x-tex">14\ \mathrm{m/s}</annotation></semantics></math></span></blockquote>
+<p><strong>解析</strong>：<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>=</mo><mstyle displaystyle="true" scriptlevel="0"><mfrac><mrow><mi mathvariant="normal">d</mi><mi>x</mi></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac></mstyle><mo>=</mo><mn>6</mn><mi>t</mi><mo>+</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">v=\dfrac{\mathrm{d}x}{\mathrm{d}t}=6t+2</annotation></semantics></math></span>，代入 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">t=2</annotation></semantics></math></span> 得 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>=</mo><mn>14</mn><mtext> </mtext><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">/</mi><mi mathvariant="normal">s</mi></mrow></mrow><annotation encoding="application/x-tex">v=14\ \mathrm{m/s}</annotation></semantics></math></span>。</p>
+<p><strong>知识点</strong>：速度与位置的关系、导数求瞬时速度</p>
+<p><strong>2. 物体做匀速圆周运动时，下列物理量中保持不变的是（ ）.</strong>（选择题，3 分）</p>
+<ul><li>A. 速度</li><li>B. 速率 ✅</li><li>C. 加速度</li><li>D. 合外力</li></ul>
+<blockquote>我的答案：B</blockquote>
+<p><strong>解析</strong>：匀速圆周运动中速度方向不断改变、加速度与合外力始终指向圆心，只有速率 <span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∣</mi><mover accent="true"><mi>v</mi><mo>⃗</mo></mover><mi mathvariant="normal">∣</mi></mrow><annotation encoding="application/x-tex">|\vec v|</annotation></semantics></math></span> 恒定，选 B。</p>
+<p><strong>知识点</strong>：匀速圆周运动、矢量与标量</p>
+</section>
+<div class="foot">导出于 2026/11/7 13:12:30 · 由学习通作业总览生成</div>
+</div>
+<script>
+document.querySelectorAll('.chip').forEach(function (chip) {
+  chip.addEventListener('click', function () {
+    document.querySelectorAll('.chip').forEach(function (c) { c.classList.toggle('on', c === chip); });
+    var id = chip.getAttribute('data-id');
+    document.querySelectorAll('section.course').forEach(function (s) {
+      s.hidden = id !== 'all' && s.getAttribute('data-id') !== id;
+    });
+    window.scrollTo(0, 0);
+  });
+});
+</script>
+</body></html>
