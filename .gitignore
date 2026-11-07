@@ -1,0 +1,10 @@
+# 账号与本地数据，禁止提交
+.session.json
+config.json
+data/
+
+# 系统杂项
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
