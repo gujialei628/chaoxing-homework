@@ -877,6 +877,14 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/export.html') {
       const courseId = url.searchParams.get('course') || '';
       const bank = loadBank();
+      // 题库为空时别给用户一个空白文件
+      if (!Object.keys(bank.courses).length) {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end('<!doctype html><meta charset="utf-8"><title>题库为空</title>' +
+          '<body style="font:16px/1.9 system-ui,sans-serif;padding:48px 32px;color:#1f2430">' +
+          '<h2 style="margin:0 0 8px">题库还是空的</h2>' +
+          '<p style="color:#6b7280;margin:0">先在页面点「更新题库」抓取已交作业，再回来导出。</p></body>');
+      }
       const name = (courseId && bank.courses[courseId] ? bank.courses[courseId].name : '作业题库') + '.html';
       res.writeHead(200, {
         'Content-Type': 'text/html; charset=utf-8',
