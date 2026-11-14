@@ -7,6 +7,7 @@
 
 const http = require('http');
 const https = require('https');
+const net = require('net');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -1219,6 +1220,16 @@ async function notifyDue() {
   return { due: due.length, sent: fresh.length };
 }
 
+function portOpen(port) {
+  return new Promise(resolve => {
+    const s = net.connect({ host: '127.0.0.1', port });
+    const done = ok => { s.destroy(); resolve(ok); };
+    s.once('connect', () => done(true));
+    s.once('error', () => done(false));
+    s.setTimeout(800, () => done(false));
+  });
+}
+
 function startNotifier() {
   const cfg = loadConfig() || {};
   if (!cfg.mail || cfg.mail.enabled === false) return;
@@ -1261,8 +1272,12 @@ if (process.argv.includes('--crawl')) {
     process.exit(0);
   }).catch(e => { console.error('\n抓取失败:', e.message); process.exit(1); });
 } else if (process.argv.includes('--notify')) {
-  // CLI：node server.js --notify 立刻检查一次并发信（自检/定时任务用）
-  notifyDue().then(r => { console.log(JSON.stringify(r)); process.exit(0); })
+  // CLI：node server.js --notify 立刻检查一次并发信（计划任务用）
+  // 服务开着就别再发一遍，它的定时器会管；不然两边可能同时发同一封
+  Promise.all([PORT, PORT + 1, PORT + 2].map(portOpen)).then(open => {
+    if (open.some(Boolean)) { console.log('{"skipped":"服务在跑，交给它的定时器"}'); process.exit(0); }
+    return notifyDue();
+  }).then(r => { console.log(JSON.stringify(r)); process.exit(0); })
     .catch(e => { console.error('提醒失败:', e.message); process.exit(1); });
 } else {
   server.listen(PORT, '127.0.0.1', onReady);
