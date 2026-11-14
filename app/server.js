@@ -10,7 +10,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { exec } = require('child_process');
+const { exec, execFile } = require('child_process');
 
 const DIR = __dirname;
 const PORT = Number(process.env.PORT || 7788);
@@ -1126,6 +1126,107 @@ server.on('error', err => {
   }
 });
 
+/* ------------------------------------------------------------------ *
+ * 到期提醒：24 小时内截止的作业/考试，发一封邮件（agently-cli 发信）
+ * ------------------------------------------------------------------ */
+const NOTIFY_FILE = path.join(DATA_DIR, 'notify.json');
+const MAIL_BODY_FILE = path.join(DATA_DIR, 'mail-body.html');
+const CLI_JS = path.join(process.env.APPDATA || '', 'npm', 'node_modules', '@tencent-qqmail', 'agently-cli', 'scripts', 'run.js');
+const DUE_WINDOW = (Number(process.env.NOTIFY_HOURS) || 24) * 3600 * 1000;
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+function remainText(ms) {
+  const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+  return (h ? h + ' 小时 ' : '') + m + ' 分钟';
+}
+
+/** 直接 node 运行 CLI 的入口文件，避免经 cmd.exe 传中文参数被空格截断 */
+function cli(args) {
+  return new Promise((resolve, reject) => {
+    execFile(process.execPath, [CLI_JS].concat(args), {
+      cwd: DIR, timeout: 90000, maxBuffer: 1 << 20, windowsHide: true
+    }, (err, stdout, stderr) => {
+      const out = String(stdout || '');
+      if (!out) return reject(new Error(String(stderr || (err && err.message) || 'agently-cli 没输出').slice(0, 300)));
+      resolve(out);
+    });
+  });
+}
+
+function cliJson(out) {
+  const i = out.indexOf('{');
+  if (i < 0) return {};
+  try { return JSON.parse(out.slice(i)); } catch (e) { return {}; }
+}
+
+async function sendMail(subject, html) {
+  const cfg = loadConfig() || {};
+  const to = (cfg.mail && cfg.mail.to) || '';
+  if (!to) throw new Error('config.json 里没有 mail.to（收件邮箱）');
+
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(MAIL_BODY_FILE, html, 'utf8');
+
+  const base = ['message', '+send', '--to', to, '--subject', subject, '--body-file', 'data/mail-body.html'];
+  const first = cliJson(await cli(base));                       // 第一次只拿确认令牌，不真发
+  if (process.env.MAIL_DRY) return 'dry';
+  const token = (first.data && first.data.confirmation_token) || '';
+  if (!token) throw new Error('写邮件失败：' + JSON.stringify(first.error || first).slice(0, 200));
+
+  const done = cliJson(await cli(base.concat(['--confirmation-token', token])));
+  if (!done.ok) throw new Error('发信失败：' + JSON.stringify(done.error || done).slice(0, 200));
+  return to;
+}
+
+/** 找出 24 小时内到期、且这次截止时间还没提醒过的项；返回发信结果 */
+async function notifyDue() {
+  const cfg = loadConfig() || {};
+  if (cfg.mail && cfg.mail.enabled === false) return { skipped: 'disabled' };
+  if (!fs.existsSync(CLI_JS)) throw new Error('没装 agently-cli：npm i -g @tencent-qqmail/agently-cli');
+
+  const list = await getHomework();
+  const due = list.items.filter(it => it.kind === 'todo' && !it.expired &&
+    it.remainMs > 0 && it.remainMs <= DUE_WINDOW);
+  if (!due.length) return { due: 0, sent: 0 };
+
+  let state = {};
+  try { state = JSON.parse(fs.readFileSync(NOTIFY_FILE, 'utf8')); } catch (e) {}
+  const sent = state.sent || {};
+
+  // 同一项只提醒一次；老师改了截止时间（差 30 分钟以上）才再提醒
+  const fresh = due.filter(it => {
+    it.deadline = Math.round((Date.now() + it.remainMs) / 60000) * 60000;
+    return Math.abs((sent[it.id] || 0) - it.deadline) > 30 * 60000;
+  });
+  if (!fresh.length) return { due: due.length, sent: 0 };
+
+  const dueHours = Math.round(DUE_WINDOW / 3600000);
+  const rows = fresh.map(it => '<tr><td>' + esc(list.courses[it.courseId] || it.courseRaw || '未知课程') +
+    '</td><td><a href="' + esc(it.url) + '">' + esc(it.title) + '</a></td><td>' +
+    (it.isExam ? '考试' : '作业') + '</td><td>' + remainText(it.remainMs) + '</td></tr>').join('');
+  const html = '<p>以下作业/考试将在 ' + dueHours + ' 小时内截止：</p>' +
+    '<table cellspacing="0" cellpadding="8" border="1" style="border-collapse:collapse;font:14px/1.7 system-ui,sans-serif">' +
+    '<tr><th align="left">课程</th><th align="left">题目</th><th>类型</th><th align="left">剩余</th></tr>' + rows + '</table>';
+
+  const result = await sendMail('【作业提醒】' + fresh.length + ' 项将在 ' + dueHours + ' 小时内截止', html);
+  if (result !== 'dry') {
+    fresh.forEach(it => { sent[it.id] = it.deadline; });
+    fs.writeFileSync(NOTIFY_FILE, JSON.stringify({ sent, lastSent: Date.now() }, null, 1), 'utf8');
+  }
+  return { due: due.length, sent: fresh.length };
+}
+
+function startNotifier() {
+  const cfg = loadConfig() || {};
+  if (!cfg.mail || cfg.mail.enabled === false) return;
+  const tick = () => notifyDue().catch(e => console.log('  提醒检查失败：' + e.message));
+  setTimeout(tick, 15 * 1000);
+  setInterval(tick, 30 * 60 * 1000);   // 服务开着时每 30 分钟看一次
+}
+
 function onReady() {
   const url = `http://127.0.0.1:${listenPort}/`;
   console.log('');
@@ -1137,6 +1238,7 @@ function onReady() {
   if (!process.env.NO_OPEN) {
     exec(`start "" "${url}"`, err => { if (err) console.log('（自动打开浏览器失败，请手动访问上面的地址）'); });
   }
+  startNotifier();
 }
 
 // CLI：node server.js --crawl 直接跑一遍题库抓取并打印统计（自检用）
@@ -1158,6 +1260,10 @@ if (process.argv.includes('--crawl')) {
     if (questions === 0 || withStem < questions) { console.error('!! 题目解析不完整'); process.exit(1); }
     process.exit(0);
   }).catch(e => { console.error('\n抓取失败:', e.message); process.exit(1); });
+} else if (process.argv.includes('--notify')) {
+  // CLI：node server.js --notify 立刻检查一次并发信（自检/定时任务用）
+  notifyDue().then(r => { console.log(JSON.stringify(r)); process.exit(0); })
+    .catch(e => { console.error('提醒失败:', e.message); process.exit(1); });
 } else {
   server.listen(PORT, '127.0.0.1', onReady);
 }
