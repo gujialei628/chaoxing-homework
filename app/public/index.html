@@ -311,6 +311,12 @@
     return Math.max(1, m) + ' 分钟';
   }
 
+  function fmtInterval(a, b) {
+    const f = ms => { const d = new Date(ms), p = n => String(n).padStart(2, '0');
+      return `${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+    return f(a) + ' ~ ' + (new Date(a).toDateString() === new Date(b).toDateString() ? f(b).slice(6) : f(b));
+  }
+
   function urgency(it) {
     if (it.expired || it.remainMs === -1) return 'expired';
     if (it.remainMs != null && it.remainMs <= 24 * 3600000) return 'soon';
@@ -481,7 +487,8 @@
 
   function row(it, isDone) {
     const u = urgency(it);
-    const due = it.remainMs == null ? '' : humanize(it.remainMs);
+    const due = it.isExam && it.startMs ? fmtInterval(it.startMs, it.endMs)
+      : (it.remainMs == null ? '' : (u === 'expired' ? '' : '剩 ') + humanize(it.remainMs));
 
     const chip = el('span', { class: 'chip', title: courseName(it), text: courseName(it) });
     chip.addEventListener('click', () => {
@@ -496,7 +503,7 @@
         el('div', { class: 'meta' },
           chip,
           it.isExam ? el('span', { class: 'chip exam', text: '考试' }) : null,
-          due ? el('span', { class: 'due ' + u, text: (u === 'expired' ? '' : '剩 ') + due }) : null
+          due ? el('span', { class: 'due ' + u, text: due }) : null
         )
       ),
       el('div', { class: 'right' },

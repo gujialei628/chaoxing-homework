@@ -21,6 +21,7 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
 
 const WORK_URL = 'https://mooc1-api.chaoxing.com/work/stu-work';
 const EXAM_URL = 'https://mooc1-api.chaoxing.com/phone/moocAnalysis/examList';
+const NOTICE_URL = 'https://notice.chaoxing.com/pc/notice/getNoticeList';
 const COURSE_URL = 'https://mooc1-api.chaoxing.com/mycourse/backclazzdata?view=json&mcode=';
 
 /* ------------------------------------------------------------------ *
@@ -261,10 +262,67 @@ function parseExamPage(html) {
       courseId: q.courseId || '',
       classId: q.classId || '',
       url: /^https?:/i.test(url) ? url : 'https://mooc1-api.chaoxing.com' + url,
+      taskrefId: q.taskrefId || '',
       isExam: true
     });
   }
   return items;
+}
+
+// 收件箱的通知带考试时间区间：新通知在 cparams 里给毫秒时间戳，
+// 老通知只在正文写「考试时间：11-11 21:09 至 11-13 21:09」
+// shortcut: 正文不带年份时按今年算，跨年那几天会差一年，要精确就等 cparams 齐全
+function noticeSpan(n) {
+  let cp = {};
+  try { cp = JSON.parse((n.extendParam || {}).cparams || '{}'); } catch (e) {}
+  const c = (cp.funConfig || {}).content || {};
+  if (c.startTime && c.endTime) return { start: Number(c.startTime), end: Number(c.endTime) };
+
+  const ds = String(n.content || '').match(/(?:\d{4}-)?\d{1,2}-\d{1,2}\s+\d{1,2}:\d{2}(?::\d{2})?/g) || [];
+  if (ds.length < 2) return null;
+  const y = new Date().getFullYear();
+  const ts = ds.slice(0, 2).map(s => {
+    const m = s.match(/^(?:(\d{4})-)?(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    return m ? new Date(Number(m[1] || y), Number(m[2]) - 1, Number(m[3]),
+      Number(m[4]), Number(m[5]), Number(m[6] || 0)).getTime() : 0;
+  });
+  return ts[0] && ts[1] ? { start: ts[0], end: ts[1] } : null;
+}
+
+// 翻收件箱拿「考试 id → 时间区间」，拿不到就返回 {}，别影响作业列表
+async function examTimes() {
+  const out = {};
+  const fields = 'type=0&notice_type=&lastValue=%LAST%&sort=&folderUUID=&kw=&startTime=&endTime=' +
+    '&gKw=&gName=&year=&tag=&fidsCode=&queryFolderNoticePrevYear=&filterSenderPuids=&filterTags=';
+  try {
+    let last = '';
+    for (let page = 0; page < 8; page++) {
+      const res = await request(NOTICE_URL, {
+        method: 'POST',
+        body: fields.replace('%LAST%', encodeURIComponent(last)),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const n = (JSON.parse(res.body || '{}').notices) || {};
+      const list = n.list || [];
+      if (!list.length) break;
+
+      list.forEach(x => {
+        const span = noticeSpan(x);
+        if (!span) return;
+        let att = [];
+        try { att = JSON.parse(x.attachment || '[]'); } catch (e) { return; }
+        att.forEach(a => {
+          const w = a.att_web || {};
+          // 第一页是最新的，同一场考试有提醒+原通知两条，留最新的
+          if (w.examOrWork === 'exam' && w.examOrWorkId && !out[w.examOrWorkId]) out[w.examOrWorkId] = span;
+        });
+      });
+
+      if (!n.lastGetId || n.lastGetId === last) break;
+      last = n.lastGetId;
+    }
+  } catch (e) { /* 收件箱不通就算了，考试照常显示，只是没有时间 */ }
+  return out;
 }
 
 function queryOf(url) {
@@ -341,6 +399,16 @@ async function fetchHomework() {
 
   const seen = new Set(items.map(it => it.id));
   examLists.flat().forEach(e => { if (!seen.has(e.id)) { seen.add(e.id); items.push(e); } });
+
+  // 考试时间区间只有收件箱里有，按考试 id 补到列表上
+  const times = await examTimes();
+  items.forEach(it => {
+    const t = it.isExam ? times[it.taskrefId] : null;
+    if (!t) return;
+    it.startMs = t.start;
+    it.endMs = t.end;
+    it.remainMs = t.end - Date.now();
+  });
 
   return { items, courses, ts: Date.now() };
 }
