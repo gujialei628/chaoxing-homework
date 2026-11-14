@@ -20,6 +20,7 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
   '(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
 const WORK_URL = 'https://mooc1-api.chaoxing.com/work/stu-work';
+const EXAM_URL = 'https://mooc1-api.chaoxing.com/phone/moocAnalysis/examList';
 const COURSE_URL = 'https://mooc1-api.chaoxing.com/mycourse/backclazzdata?view=json&mcode=';
 
 /* ------------------------------------------------------------------ *
@@ -152,8 +153,8 @@ async function login(phone, password) {
 /* ------------------------------------------------------------------ *
  * 抓取 + 解析
  * ------------------------------------------------------------------ */
-const STATUS_TODO = ['未提交', '未交', '待提交', '未完成', '待重做', '已驳回'];
-const STATUS_DONE = ['待批阅', '已完成', '已提交', '已互评', '已通过', '已批阅'];
+const STATUS_TODO = ['未提交', '未交', '待提交', '未完成', '待重做', '已驳回', '未开始', '进行中'];
+const STATUS_DONE = ['待批阅', '已完成', '已提交', '已互评', '已通过', '已批阅', '完成'];
 const STATUS_EXPIRED = ['已过期', '已截止', '已结束'];
 const ALL_STATUS = new Set([].concat(STATUS_TODO, STATUS_DONE, STATUS_EXPIRED));
 
@@ -235,6 +236,37 @@ function parseWorkPage(html) {
   return items;
 }
 
+// 考试列表页：一行一个 <tr data="/exam/phone/task-exam?..." title="考试名">，第三格是状态
+function parseExamPage(html) {
+  const items = [];
+  const rowRe = /<tr\b[^>]*\bdata="([^"]*)"[^>]*\btitle="([^"]*)"[^>]*>([\s\S]*?)<\/tr>/gi;
+  let m;
+  while ((m = rowRe.exec(html))) {
+    const title = decodeEntities(m[2]).trim();
+    if (!title) continue;
+
+    const cells = (m[3].match(/<td\b[^>]*>([\s\S]*?)<\/td>/gi) || []).map(stripTags);
+    const status = cells.find(t => ALL_STATUS.has(t)) || '未知';
+    const url = decodeEntities(m[1]);
+    const q = queryOf(url);
+
+    items.push({
+      id: 'exam-' + (q.taskrefId || url),
+      title,
+      status,
+      kind: classify(status),
+      expired: STATUS_EXPIRED.indexOf(status) >= 0,
+      remainMs: null,                      // 列表页不给截止时间
+      courseRaw: '',
+      courseId: q.courseId || '',
+      classId: q.classId || '',
+      url: /^https?:/i.test(url) ? url : 'https://mooc1-api.chaoxing.com' + url,
+      isExam: true
+    });
+  }
+  return items;
+}
+
 function queryOf(url) {
   const out = {};
   const i = url.indexOf('?');
@@ -264,6 +296,19 @@ function parseCourses(text) {
   return map;
 }
 
+// 考试接口按 courseId + classId 查，classId 就是 channel 的 key
+function parseCourseClasses(text) {
+  const out = [];
+  let data;
+  try { data = JSON.parse(text); } catch (e) { return out; }
+  (data.channelList || []).forEach(ch => {
+    const list = ((ch.content || {}).course || {}).data || [];
+    const courseId = list[0] && list[0].id;
+    if (courseId && ch.key) out.push({ courseId: String(courseId), classId: String(ch.key) });
+  });
+  return out;
+}
+
 async function fetchHomework() {
   const res = await request(WORK_URL);
   const html = res.body || '';
@@ -275,11 +320,27 @@ async function fetchHomework() {
 
   const items = parseWorkPage(html);
 
-  let courses = {};
+  let courses = {}, classes = [];
   try {
     const c = await request(COURSE_URL);
-    courses = parseCourses(c.body || '');
+    const text = c.body || '';
+    courses = parseCourses(text);
+    classes = parseCourseClasses(text);
   } catch (e) { /* 课程名拿不到就用截断名 */ }
+
+  // 拿不到课程列表就退回用作业里的 courseId/classId
+  if (!classes.length) classes = items.map(it => ({ courseId: it.courseId, classId: it.classId }));
+
+  // 考试不单独开一页：按课程逐个抓考试列表，哪门挂了就当它没考试
+  const examLists = await Promise.all(classes.map(c => {
+    if (!c.courseId || !c.classId) return [];
+    return request(EXAM_URL + '?courseId=' + c.courseId + '&classId=' + c.classId)
+      .then(r => parseExamPage(r.body || ''))
+      .catch(() => []);
+  }));
+
+  const seen = new Set(items.map(it => it.id));
+  examLists.flat().forEach(e => { if (!seen.has(e.id)) { seen.add(e.id); items.push(e); } });
 
   return { items, courses, ts: Date.now() };
 }

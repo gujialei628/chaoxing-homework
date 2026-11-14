@@ -97,6 +97,8 @@
     cursor: pointer;
   }
   .chip:hover { background: #e9edf5; color: var(--blue); }
+  .chip.exam { background: #eef2ff; color: #3b5bdb; cursor: default; }
+  .chip.exam:hover { background: #eef2ff; color: #3b5bdb; }
   .due { font-variant-numeric: tabular-nums; }
   .due.soon { color: var(--orange); font-weight: 550; }
   .due.expired { color: var(--red); font-weight: 550; }
@@ -446,7 +448,7 @@
 
     // 未交
     content.appendChild(el('div', { class: 'sec-title' },
-      '未交作业', el('span', { class: 'pill', text: String(todoF.length) })
+      '待完成', el('span', { class: 'pill', text: String(todoF.length) })
     ));
 
     if (!todoF.length) {
@@ -493,6 +495,7 @@
         el('div', { class: 'title', title: it.title, text: it.title }),
         el('div', { class: 'meta' },
           chip,
+          it.isExam ? el('span', { class: 'chip exam', text: '考试' }) : null,
           due ? el('span', { class: 'due ' + u, text: (u === 'expired' ? '' : '剩 ') + due }) : null
         )
       ),
@@ -501,7 +504,7 @@
           class: 'status ' + (isDone ? 'done' : (u === 'soon' ? 'soon' : 'todo')),
           text: it.expired ? '已截止未交' : it.status
         }),
-        isDone ? null : el('a', { class: 'go', href: it.url, target: '_blank', rel: 'noopener', text: '去做' })
+        isDone ? null : el('a', { class: 'go', href: it.url, target: '_blank', rel: 'noopener', text: it.isExam ? '去考试' : '去做' })
       )
     );
   }
