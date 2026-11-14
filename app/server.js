@@ -513,13 +513,74 @@ function parseQuestions(html) {
   return out;
 }
 
-async function crawlBank(onProgress) {
-  const listRes = await request(WORK_URL);
-  if (!/作业列表/.test(listRes.body)) throw new Error('NEED_LOGIN');
+/** 考试的「查看详情」是单题页：一题一次请求，题干/选项/我的答案/正确答案都在里面 */
+function parseExamQuestion(html) {
+  const block = (html.match(/<div class="answerScroll[^"]*"[^>]*>([\s\S]*?)<!-- 下一题 -->/) || [])[1] || html;
+  const meta = stripTags((block.match(/<div class="tit"[^>]*>[\s\S]*?<span>([\s\S]*?)<\/span>/) || [])[1] || '');
+  const stem = stripTags((block.match(/<i class="qtContent">([\s\S]*?)<\/i>/) || [])[1] || '');
+  if (!stem) return null;                       // 公式截图的题干，抠不出文字，别进题库
 
-  const items = parseWorkPage(listRes.body).filter(it => it.status !== '未提交');
-  let courses = {};
-  try { courses = parseCourses((await request(COURSE_URL)).body); } catch (e) {}
+  const correct = stripTags((block.match(/class="[^"]*correctAnswer[^"]*"[^>]*>([\s\S]*?)<\/div>/) || [])[1] || '');
+  const options = [...block.matchAll(/<div class="optionCon[^"]*"[^>]*>([\s\S]*?)<\/div>/g)].map(m => {
+    const t = stripTags(m[1]);
+    const letter = (t.match(/^([A-Z])[.．、)）]/) || [])[1] || '';
+    const text = t.replace(/^[A-Z][.．、)）:：]\s*/, '');
+    return { text, correct: !!correct && (letter ? correct.indexOf(letter) >= 0 : text === correct) };
+  }).filter(o => o.text);
+
+  return {
+    qid: (html.match(/class="answerScroll[^"]*"\s+data="(\d+)"/) || [])[1] || '',
+    type: (meta.match(/[（(]([^，,）)]+)/) || [])[1] || '',
+    score: (meta.match(/([\d.]+)\s*分/) || [])[1] || '',
+    stem,
+    options,
+    myAnswer: stripTags((block.match(/<p class="stuAnswerContent">([\s\S]*?)<\/p>/) || [])[1] || ''),
+    answer: options.length ? '' : correct,      // 填空/判断没有选项，正确答案单独留着
+    analysis: '',
+    points: []
+  };
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/** 考试页抓太密会收到【9010】验证码页（HTTP 202），撞上了等一会再试，别把账号搞进人机验证 */
+async function examRequest(url, ref) {
+  for (let i = 0; ; i++) {
+    const res = await request(url, ref ? { headers: { Referer: ref } } : {});
+    if (res.status !== 202 && !/【9010】/.test(res.body)) return res;
+    if (i >= 2) throw new Error('被要求输入验证码');
+    await sleep(20000);
+  }
+}
+
+async function crawlExam(it, prevQs) {
+  const task = await examRequest(it.url);        // 会跳到查看页，examAnswerId 在里面
+  const answerId = (task.body.match(/examAnswerId=(\d+)/) || [])[1];
+  if (!answerId) return [];
+
+  const base = 'https://mooc1-api.chaoxing.com/exam-ans/exam/phone/look-detail?courseId=' + it.courseId +
+    '&classId=' + it.classId + '&examId=' + it.taskrefId + '&examAnswerId=' + answerId;
+  const ids = [...(await examRequest(base)).body.matchAll(/<li data="(\d+)">/g)].map(m => m[1]);
+
+  // 已经抓过的题不再重复请求，只有新题才花额度
+  const have = new Map((prevQs || []).map(q => [q.qid, q]));
+  const got = new Map();
+  for (const id of ids) {
+    if (have.has(id) || got.has(id)) continue;
+    try {
+      const q = parseExamQuestion((await examRequest(base + '&isDetail=true&times=0&newVersion=1&questionLinkId=' + id, base)).body);
+      if (q) got.set(id, q);
+    } catch (e) { /* 这题拿不到下次再补 */ }
+    await sleep(500);                            // 一题一次请求，快了会被要验证码
+  }
+  return ids.map(id => got.get(id) || have.get(id)).filter(Boolean);
+}
+
+async function crawlBank(onProgress) {
+  // 已交的作业 + 已交的考试都进题库；没交的不碰（题目/答案也拿不到）
+  const list = await getHomework(true);
+  const items = list.items.filter(it =>
+    it.isExam ? (it.status === '完成' || it.status === '待批阅') : it.status !== '未提交');
 
   const old = loadBank();
   const bank = { updatedAt: Date.now(), courses: {} };
@@ -528,42 +589,52 @@ async function crawlBank(onProgress) {
   for (const it of items) {
     done++;
     if (onProgress) onProgress(done, items.length, it.title);
+
+    let questions = [], courseId = it.courseId, workId = it.id;
     try {
-      const task = await request(it.url);
-      const look = extractLookUrl(task.body);
-      if (!look) continue;                       // 互评等页面拿不到详情
+      if (it.isExam) {
+        workId = 'exam-' + it.taskrefId;
+        const oldExam = ((old.courses[courseId] || {}).assignments || {})[workId];
+        questions = await crawlExam(it, oldExam && oldExam.questions);
+      } else {
+        const task = await request(it.url);
+        const look = extractLookUrl(task.body);
+        if (look) {
+          questions = parseQuestions((await request(look)).body);
+          const q = queryOf(look);
+          courseId = q.courseId || it.courseId;
+          workId = q.workId || it.id;             // 互评等页面拿不到详情
+        }
+      }
+    } catch (e) {
+      // 单个作业/考试失败不影响整体，但考试失败得留个痕迹，不然题库里悄悄少一门
+      if (it.isExam) console.error('考试抓取失败：' + it.title + ' — ' + String(e.message || e));
+    }
+    if (!questions.length) continue;
 
-      const page = await request(look);
-      const questions = parseQuestions(page.body);
-      if (!questions.length) continue;
+    const course = bank.courses[courseId] || (
+      bank.courses[courseId] = { name: list.courses[courseId] || it.courseRaw || '', summary: '', assignments: {} }
+    );
 
-      const q = queryOf(look);
-      const courseId = q.courseId || it.courseId;
-      const workId = q.workId || it.id;
+    // 保留旧解析，按 qid 对齐
+    const prev = (old.courses[courseId] && old.courses[courseId].assignments[workId]) || {};
+    const prevMap = {};
+    (prev.questions || []).forEach(p => { prevMap[p.qid] = p; });
+    questions.forEach(qq => {
+      const p = prevMap[qq.qid];
+      if (p) { qq.analysis = p.analysis || ''; qq.points = p.points || []; }
+    });
 
-      const course = bank.courses[courseId] || (
-        bank.courses[courseId] = { name: courses[courseId] || it.courseRaw || '', summary: '', assignments: {} }
-      );
-
-      // 保留旧解析，按 qid 对齐
-      const prev = (old.courses[courseId] && old.courses[courseId].assignments[workId]) || {};
-      const prevMap = {};
-      (prev.questions || []).forEach(p => { prevMap[p.qid] = p; });
-      questions.forEach(qq => {
-        const p = prevMap[qq.qid];
-        if (p) { qq.analysis = p.analysis || ''; qq.points = p.points || []; }
-      });
-
-      course.assignments[workId] = {
-        workId,
-        title: it.title,
-        status: it.status,
-        url: it.url,
-        fetchedAt: Date.now(),
-        questions
-      };
-      if (prev.summary && prev.questions && prev.questions.length === questions.length) course.summary = old.courses[courseId].summary || '';
-    } catch (e) { /* 单个作业失败不影响整体 */ }
+    course.assignments[workId] = {
+      workId,
+      title: it.title,
+      status: it.status,
+      url: it.url,
+      isExam: !!it.isExam,
+      fetchedAt: Date.now(),
+      questions
+    };
+    if (prev.summary && prev.questions && prev.questions.length === questions.length) course.summary = old.courses[courseId].summary || '';
   }
 
   saveBank(bank);
@@ -624,6 +695,7 @@ async function analyzeCourse(courseId, course, force) {
       stem: x.q.stem,
       options: x.q.options.map((o, n) => String.fromCharCode(65 + n) + '. ' + o.text),
       correct: x.q.options.filter(o => o.correct).map((o, n) => o.text),
+      answer: x.q.answer || '',
       myAnswer: x.q.myAnswer
     }));
 
