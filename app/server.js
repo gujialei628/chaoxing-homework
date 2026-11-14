@@ -1165,13 +1165,16 @@ function cliJson(out) {
 
 async function sendMail(subject, html) {
   const cfg = loadConfig() || {};
-  const to = (cfg.mail && cfg.mail.to) || '';
-  if (!to) throw new Error('config.json 里没有 mail.to（收件邮箱）');
+  // mail.to 可以是一个地址、逗号分隔的多个地址，或数组
+  const to = [].concat((cfg.mail && cfg.mail.to) || [])
+    .flatMap(s => String(s).split(/[,;，；\s]+/)).filter(Boolean);
+  if (!to.length) throw new Error('config.json 里没有 mail.to（收件邮箱）');
 
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(MAIL_BODY_FILE, html, 'utf8');
 
-  const base = ['message', '+send', '--to', to, '--subject', subject, '--body-file', 'data/mail-body.html'];
+  const base = ['message', '+send'].concat(to.flatMap(addr => ['--to', addr]))
+    .concat(['--subject', subject, '--body-file', 'data/mail-body.html']);
   const first = cliJson(await cli(base));                       // 第一次只拿确认令牌，不真发
   if (process.env.MAIL_DRY) return 'dry';
   const token = (first.data && first.data.confirmation_token) || '';
@@ -1179,7 +1182,7 @@ async function sendMail(subject, html) {
 
   const done = cliJson(await cli(base.concat(['--confirmation-token', token])));
   if (!done.ok) throw new Error('发信失败：' + JSON.stringify(done.error || done).slice(0, 200));
-  return to;
+  return to.join(',');
 }
 
 /** 找出 24 小时内到期、且这次截止时间还没提醒过的项；返回发信结果 */
